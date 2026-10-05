@@ -1,0 +1,39 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: xiqi_market
+      MYSQL_USER: campus_app
+      MYSQL_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}
+    volumes:
+      - database:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 30
+  app:
+    build: ..
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: campus_app
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      DB_NAME: xiqi_market
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET}
+      PORT: 3088
+      LISTEN_HOST: 0.0.0.0
+      NODE_ENV: development
+      APP_ORIGIN: http://127.0.0.1:3088
+      DEMO_MODE: "true"
+    ports:
+      - "127.0.0.1:3088:3088"
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sh", "-c", "node scripts/init-db.js && node server/index.js"]
+volumes:
+  database:
+  uploads:

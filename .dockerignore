@@ -1,0 +1,9 @@
+node_modules
+dist
+.runtime
+.env
+.env.production
+uploads
+output
+.playwright-cli
+.git
