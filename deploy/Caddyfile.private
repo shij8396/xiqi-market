@@ -1,0 +1,5 @@
+https://localhost:443 {
+  tls internal
+  encode gzip
+  reverse_proxy app:3088
+}

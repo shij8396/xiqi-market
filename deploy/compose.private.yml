@@ -1,0 +1,63 @@
+# Private server acceptance. Access only through an SSH tunnel to localhost:8443.
+name: xiqi-market-private
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    mem_limit: 448m
+    memswap_limit: 768m
+    command:
+      - --innodb-buffer-pool-size=128M
+      - --performance-schema=OFF
+      - --max-connections=40
+      - --table-open-cache=256
+    environment:
+      MYSQL_DATABASE: xiqi_market
+      MYSQL_USER: campus_app
+      MYSQL_PASSWORD: ${DB_PASSWORD:?required}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?required}
+    volumes: ["database:/var/lib/mysql"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--protocol=TCP"]
+      interval: 10s
+      start_period: 90s
+      retries: 30
+  app:
+    image: xiqi-market:server20261006
+    restart: unless-stopped
+    init: true
+    mem_limit: 256m
+    memswap_limit: 512m
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: campus_app
+      DB_NAME: xiqi_market
+      DB_PASSWORD: ${DB_PASSWORD:?required}
+      SESSION_SECRET: ${SESSION_SECRET:?required}
+      PORT: 3088
+      LISTEN_HOST: 0.0.0.0
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=160
+      APP_ORIGIN: https://localhost:8443
+      DEMO_MODE: "false"
+    volumes: ["uploads:/app/uploads"]
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sh", "-c", "node scripts/init-db.js && node server/index.js"]
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    mem_limit: 64m
+    ports: ["127.0.0.1:8443:443"]
+    volumes:
+      - ./Caddyfile.private:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app]
+volumes:
+  database:
+  uploads:
+  caddy_data:
+  caddy_config:

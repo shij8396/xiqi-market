@@ -16,3 +16,6 @@ output/
 *.sql.gz
 *.dump
 backups/
+.admin-password
+.admin-created
+.test-root-ca.crt

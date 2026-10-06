@@ -11,7 +11,7 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY server ./server
 COPY scripts ./scripts
-RUN mkdir uploads && chown -R node:node /app
+RUN mkdir uploads && chown node:node uploads
 USER node
 ENV LISTEN_HOST=0.0.0.0
 EXPOSE 3088

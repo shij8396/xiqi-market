@@ -3,7 +3,12 @@ dist
 .runtime
 .env
 .env.production
+.env.*
 uploads
 output
 .playwright-cli
 .git
+backups
+.admin-password
+.admin-created
+.test-root-ca.crt
